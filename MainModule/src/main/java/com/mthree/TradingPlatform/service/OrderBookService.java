@@ -1,9 +1,14 @@
 package com.mthree.TradingPlatform.service;
 
 import com.mthree.TradingPlatform.domain.model.*;
+import com.mthree.TradingPlatform.events.OrderCancelledEvent;
+import com.mthree.TradingPlatform.events.OrderProcessedEvent;
+import com.mthree.TradingPlatform.events.TradeExecutedEvent;
+import com.mthree.TradingPlatform.kafka.EventProducer;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +24,23 @@ public class OrderBookService {
     //in memory, need to add saving snapshots later
     Map<String, OrderBook> books = new HashMap<>();
 
+    private final EventProducer eventProducer;
 
+    public OrderBookService(EventProducer eventProducer) {
+        this.eventProducer = eventProducer;
+    }
 
     public List<Trade> placeOrder(String symbol, Order order) {
-        return getOrCreateOrderBook(symbol).match(order);
+        OrderBook book = getOrCreateOrderBook(symbol);
+
+        List<Trade> trades = book.match(order);
+        eventProducer.publishOrderPlaced(new OrderProcessedEvent(UUID.randomUUID(), Instant.now(),
+                order.getOrderId(), order.getUserId(), symbol, order.getSide(), order.getPrice(), order.getQuantity()));
+
+        for(Trade trade  : trades){
+            eventProducer.publishTradeExecuted(new TradeExecutedEvent(UUID.randomUUID(), Instant.now(), trade));
+        }
+        return trades;
     }
     public BigDecimal getHighestBid(String symbol){
         OrderBook book = getOrCreateOrderBook(symbol);
@@ -42,6 +60,7 @@ public class OrderBookService {
         OrderBook book = getOrCreateOrderBook(symbol);
         if(book == null) return;
         book.cancel(orderId);
+        eventProducer.publishOrderCancelled(new OrderCancelledEvent(UUID.randomUUID(), Instant.now(), orderId, symbol));
     }
     public OrderBook getOrCreateOrderBook(String symbol){
         return books.computeIfAbsent(symbol, OrderBook::new);
