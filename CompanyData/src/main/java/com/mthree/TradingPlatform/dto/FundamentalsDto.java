@@ -1,5 +1,7 @@
 package com.mthree.TradingPlatform.dto;
 
+import com.mthree.TradingPlatform.domain.model.Fundamentals;
+
 import java.math.BigDecimal;
 
 public record FundamentalsDto(
@@ -12,5 +14,9 @@ public record FundamentalsDto(
         BigDecimal debtToEquity,
         BigDecimal marketCap
 ) {
-
+    public static FundamentalsDto from(Fundamentals snapshot){
+        return new FundamentalsDto(
+                snapshot.getRevenue(), snapshot.getNetIncome(), snapshot.getEps(),
+                snapshot.getPeRatio(), snapshot.getRoe(), snapshot.getDebtToEquity(), snapshot.getMarketCap());
+    }
 }
