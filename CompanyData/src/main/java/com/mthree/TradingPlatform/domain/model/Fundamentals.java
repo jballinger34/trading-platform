@@ -14,7 +14,7 @@ import java.util.UUID;
 public class Fundamentals {
 
     @Id
-    private UUID companyId;
+    private String symbol;
 
     private BigDecimal revenue;
 
@@ -30,9 +30,9 @@ public class Fundamentals {
 
     private BigDecimal marketCap;
 
-    public static Fundamentals from(UUID companyId, FundamentalsDto dto){
+    public static Fundamentals from(String symbol, FundamentalsDto dto){
         Fundamentals fundamentals = new Fundamentals();
-        fundamentals.companyId = companyId;
+        fundamentals.symbol = symbol;
 
         fundamentals.revenue = dto.revenue();
         fundamentals.netIncome = dto.netIncome();

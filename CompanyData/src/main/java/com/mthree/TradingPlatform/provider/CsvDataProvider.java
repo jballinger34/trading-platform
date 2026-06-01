@@ -54,6 +54,7 @@ public class CsvDataProvider implements DataProvider {
                 String symbol = p[0];
 
                 companyMap.put(symbol, new CompanyProfileDto(
+                        symbol,
                         p[1], // name
                         p[2], // sector
                         p[3]  // industry
