@@ -1,7 +1,6 @@
 package com.mthree.TradingPlatform.controller;
 
 import com.mthree.TradingPlatform.dto.StockCandleDto;
-import com.mthree.TradingPlatform.entity.StockCandle;
 import com.mthree.TradingPlatform.service.PriceHistoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,19 +22,26 @@ public class PriceHistoryController {
         StockCandleDto candle = service.getLatestCandleBySymbol(symbol);
         return ResponseEntity.ok(candle);
     }
+    @GetMapping("/latest")
+    public ResponseEntity<List<StockCandleDto>> getBatchLatestCandle(List<String> symbols){
+        List<StockCandleDto> candle = service.getBatchLatestPriceBySymbols(symbols);
+        return ResponseEntity.ok(candle);
+    }
+
+    @GetMapping("/volume/{symbol}")
+    public ResponseEntity<Long> getTotalVolume(@PathVariable String symbol){
+
+        long totalVolume = service.getVolumeBySymbol(symbol);
+
+        return ResponseEntity.ok(totalVolume);
+    }
 
     @GetMapping("/{symbol}")
     public ResponseEntity<List<StockCandleDto>> getCandles(@PathVariable String symbol){
         List<StockCandleDto> candles = service.getCandlesBySymbol(symbol);
         return ResponseEntity.ok(candles);
     }
-    @GetMapping("/{symbol}/volume")
-    public ResponseEntity<Long> getVolume(@PathVariable String symbol){
 
-        long totalVolume = service.getVolumeBySymbol(symbol);
-
-        return ResponseEntity.ok(totalVolume);
-    }
 
 
 }
