@@ -78,6 +78,7 @@ public class CsvDataProvider implements DataProvider {
 
                 String symbol = p[0];
                 FundamentalsDto snapshot = new FundamentalsDto(
+                        symbol,
                         new BigDecimal(p[1]),
                         new BigDecimal(p[2]),
                         new BigDecimal(p[3]),
