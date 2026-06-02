@@ -17,8 +17,8 @@ public class EventProducer {
         kafkaTemplate.send(topic, key, event);
     }
 
-    public void publishOrderPlaced(OrderProcessedEvent event){
-        publish("orders.placed", event.orderId().toString(), event);
+    public void publishOrderProcessed(OrderProcessedEvent event){
+        publish("orders.processed", event.orderId().toString(), event);
     }
     public void publishOrderCancelled(OrderCancelledEvent event){
         publish("orders.cancelled", event.orderId().toString() ,event);

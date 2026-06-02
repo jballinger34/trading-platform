@@ -30,11 +30,11 @@ public class OrderBookService {
         this.eventProducer = eventProducer;
     }
 
-    public List<Trade> placeOrder(String symbol, Order order) {
+    public List<Trade> processOrder(String symbol, Order order) {
         OrderBook book = getOrCreateOrderBook(symbol);
 
         List<Trade> trades = book.match(order);
-        eventProducer.publishOrderPlaced(new OrderProcessedEvent(UUID.randomUUID(), Instant.now(),
+        eventProducer.publishOrderProcessed(new OrderProcessedEvent(UUID.randomUUID(), Instant.now(),
                 order.getOrderId(), order.getUserId(), symbol, order.getSide(), order.getPrice(), order.getQuantity()));
 
         for(Trade trade  : trades){

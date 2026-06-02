@@ -33,11 +33,11 @@ public class TradingPlatformApplication {
 			Order sell1 = new Order(UUID.randomUUID(), 12, new BigDecimal("100.00"), OrderSide.SELL);
 
 			System.out.println("Placing BUY orders...");
-			orderBookService.placeOrder(symbol, buy1);
-			orderBookService.placeOrder(symbol, buy2);
+			orderBookService.processOrder(symbol, buy1);
+			orderBookService.processOrder(symbol, buy2);
 
 			System.out.println("Placing SELL order (should match)...");
-			List<Trade> trades = orderBookService.placeOrder(symbol, sell1);
+			List<Trade> trades = orderBookService.processOrder(symbol, sell1);
 
 			System.out.println("TRADES:");
 			trades.forEach(System.out::println);
