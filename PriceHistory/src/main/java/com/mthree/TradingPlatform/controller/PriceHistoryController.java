@@ -18,6 +18,12 @@ public class PriceHistoryController {
         this.service = service;
     }
 
+    @GetMapping("/latest/{symbol}")
+    public ResponseEntity<StockCandleDto> getLatestCandle(@PathVariable String symbol){
+        StockCandleDto candle = service.getLatestCandleBySymbol(symbol);
+        return ResponseEntity.ok(candle);
+    }
+
     @GetMapping("/{symbol}")
     public ResponseEntity<List<StockCandleDto>> getCandles(@PathVariable String symbol){
         List<StockCandleDto> candles = service.getCandlesBySymbol(symbol);

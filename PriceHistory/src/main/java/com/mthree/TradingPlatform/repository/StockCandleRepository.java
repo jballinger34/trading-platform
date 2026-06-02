@@ -16,6 +16,8 @@ public interface StockCandleRepository extends JpaRepository<StockCandle, Long> 
     Optional<StockCandle> findBySymbolAndBucketStart(String symbol, Instant bucketStart);
 
     List<StockCandle> findBySymbolOrderByBucketStartAsc(String symbol);
+    Optional<StockCandle> findTopBySymbolOrderByBucketStartDesc(String symbol);
+
 
     @Query("""
         SELECT COALESCE(SUM(c.volume), 0)

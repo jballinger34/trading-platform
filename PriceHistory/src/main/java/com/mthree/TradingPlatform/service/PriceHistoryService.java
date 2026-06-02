@@ -46,6 +46,10 @@ public class PriceHistoryService {
                 .build());
     }
 
+    public StockCandleDto getLatestCandleBySymbol(String symbol){
+        StockCandle candle = stockCandleRepository.findTopBySymbolOrderByBucketStartDesc(symbol).orElseThrow();
+        return StockCandleDto.from(candle);
+    }
     public List<StockCandleDto> getCandlesBySymbol(String symbol){
         return stockCandleRepository.findBySymbolOrderByBucketStartAsc(symbol).stream().map(StockCandleDto::from).toList();
     }
