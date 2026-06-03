@@ -5,14 +5,13 @@ import com.mthree.TradingPlatform.client.InstrumentClient;
 import com.mthree.TradingPlatform.client.PriceClient;
 import com.mthree.TradingPlatform.dto.*;
 import com.mthree.TradingPlatform.request.StockScreenRequest;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
+@Service
 public class ScreenerService {
 
     private final InstrumentClient instrumentClient;
@@ -25,23 +24,19 @@ public class ScreenerService {
         this.priceHistoryClient = priceHistoryClient;
     }
 
-    public List<ScreenedStockDto> screen(StockScreenRequest request){
-        //get all symbols
+    public ScreenResultDto screen(StockScreenRequest request){
         List<String> symbols = instrumentClient.getAllInstruments().stream().map(InstrumentResponseDto::symbol).toList();
-        List<CompanyProfileDto> profiles = companyDataClient.getProfiles(symbols);
-        List<FundamentalsDto> fundamentals = companyDataClient.getFundamentals(symbols);
-        List<PriceDto> prices = priceHistoryClient.getLatestPriceData(symbols);
 
-        Map<String, CompanyProfileDto> profileMap = profiles.stream()
-                .collect(Collectors.toMap(CompanyProfileDto::symbol, p->p));
+        Map<String, CompanyProfileDto> profileMap = getProfileMap(symbols);
+        Map<String, FundamentalsDto> fundamentalsMap = getFundamentalsMap(symbols);
+        Map<String, PriceDto> priceMap = getPricesMap(symbols);
 
-        Map<String, FundamentalsDto> fundamentalsMap = fundamentals.stream()
-                .collect(Collectors.toMap(FundamentalsDto::symbol, f->f));
+        Comparator<ScreenedStockDto> comparator = buildComparator(request);
 
-        Map<String, PriceDto> priceMap = prices.stream()
-                .collect(Collectors.toMap(PriceDto::symbol, p -> p));
+        int page = request.page() == null ? 0 : request.page();
+        int size = request.size() == null ? 50 : request.size();
 
-        return symbols.stream()
+        List<ScreenedStockDto> filtered = symbols.stream()
                 .map(symbol -> {
 
                     CompanyProfileDto profile = profileMap.get(symbol);
@@ -52,61 +47,119 @@ public class ScreenerService {
                     if (profile == null || f == null || price == null) {
                         return null;
                     }
-
-                    return new ScreenedStockDto(
-                            symbol,
-
-                            profile.name(),
-                            profile.sector(),
-                            profile.industry(),
-
-                            price.close(),
-                            price.bucketStart(),
-                            price.volume(),
-
-                            f.marketCap(),
-                            f.revenue(),
-                            f.netIncome(),
-                            f.eps(),
-
-                            f.peRatio(),
-                            f.roe(),
-                            f.debtToEquity()
-                    );
+                    return buildStock(symbol, profile, f, price);
                 })
                 .filter(Objects::nonNull)
                 .filter(stock -> matches(request, stock))
                 .toList();
+
+        int totalResults = filtered.size();
+        int totalPages = (int) Math.ceil((double) totalResults / size);
+
+        List<ScreenedStockDto> pagedResults = filtered.stream()
+                .sorted(comparator)
+                .skip((long) page * size)
+                .limit(size)
+                .toList();
+        return new ScreenResultDto(pagedResults, totalResults, page, size, totalPages);
 
     }
     private boolean matches(StockScreenRequest r, ScreenedStockDto s) {
         if (r.sector() != null && !r.sector().equalsIgnoreCase(s.sector())) return false;
         if (r.industry() != null && !r.industry().equalsIgnoreCase(s.industry())) return false;
 
-        if (r.minPrice() != null && s.price().compareTo(r.minPrice()) < 0) return false;
-        if (r.maxPrice() != null && s.price().compareTo(r.maxPrice()) > 0) return false;
-        if (r.minVolume() != null && BigDecimal.valueOf(s.volume()).compareTo(r.minVolume()) < 0) return false;
-        if (r.maxVolume() != null && BigDecimal.valueOf(s.volume()).compareTo(r.maxVolume()) > 0) return false;
+        if(notInRange(s.price(), r.minPrice(), r.maxPrice())) return false;
+        if(notInRange(s.volume(), r.minVolume(), r.maxVolume())) return false;
 
-        if (r.minRevenue() != null && s.revenue().compareTo(r.minRevenue()) < 0) return false;
-        if (r.maxRevenue() != null && s.revenue().compareTo(r.maxRevenue()) > 0) return false;
-        if (r.minNetIncome() != null && s.netIncome().compareTo(r.minNetIncome()) < 0) return false;
-        if (r.maxNetIncome() != null && s.netIncome().compareTo(r.maxNetIncome()) > 0) return false;
-        if (r.minEps() != null && s.eps().compareTo(r.minEps()) < 0) return false;
-        if (r.maxEps() != null && s.eps().compareTo(r.maxEps()) > 0) return false;
+        if(notInRange(s.revenue(), r.minRevenue(), r.maxRevenue())) return false;
+        if(notInRange(s.netIncome(), r.minNetIncome(), r.maxNetIncome())) return false;
+        if(notInRange(s.eps(), r.minEps(), r.maxEps())) return false;
+        if(notInRange(s.peRatio(), r.minPe(), r.maxPe())) return false;
 
-        if (r.minPe() != null && s.peRatio().compareTo(r.minPe()) < 0) return false;
-        if (r.maxPe() != null && s.peRatio().compareTo(r.maxPe()) > 0) return false;
-
-        if (r.minRoe() != null && s.roe().compareTo(r.minRoe()) < 0) return false;
-        if (r.maxRoe() != null && s.roe().compareTo(r.maxRoe()) > 0) return false;
-        if (r.minDebtToEquity() != null && s.debtToEquity().compareTo(r.minDebtToEquity()) < 0) return false;
-        if (r.maxDebtToEquity() != null && s.debtToEquity().compareTo(r.maxDebtToEquity()) > 0) return false;
-        if (r.minMarketCap() != null && s.marketCap().compareTo(BigDecimal.valueOf(r.minMarketCap())) < 0) return false;
-        if (r.maxMarketCap() != null && s.marketCap().compareTo(BigDecimal.valueOf(r.maxMarketCap())) > 0) return false;
-
+        if(notInRange(s.roe(), r.minRoe(), r.maxRoe())) return false;
+        if(notInRange(s.debtToEquity(), r.minDebtToEquity(), r.maxDebtToEquity())) return false;
+        if(notInRange(s.marketCap(), r.minMarketCap(), r.maxMarketCap())) return false;
 
         return true;
+    }
+
+    private ScreenedStockDto buildStock(
+            String symbol,
+            CompanyProfileDto profile,
+            FundamentalsDto fundamentals,
+            PriceDto price) {
+
+        return new ScreenedStockDto(
+                symbol,
+
+                profile.name(),
+                profile.sector(),
+                profile.industry(),
+
+                price.close(),
+                price.bucketStart(),
+                price.volume(),
+
+                fundamentals.marketCap(),
+                fundamentals.revenue(),
+                fundamentals.netIncome(),
+                fundamentals.eps(),
+
+                fundamentals.peRatio(),
+                fundamentals.roe(),
+                fundamentals.debtToEquity()
+        );
+    }
+
+    private Comparator<ScreenedStockDto> buildComparator(StockScreenRequest request){
+        Comparator<ScreenedStockDto> comparator =
+                switch (request.sortBy()) {
+                    case "price" -> Comparator.comparing(ScreenedStockDto::price, Comparator.nullsLast(Comparator.naturalOrder()));
+                    case "volume" -> Comparator.comparingLong(ScreenedStockDto::volume);
+                    case "marketCap" -> Comparator.comparing(ScreenedStockDto::marketCap, Comparator.nullsLast(Comparator.naturalOrder()));
+                    case "pe" -> Comparator.comparing(ScreenedStockDto::peRatio, Comparator.nullsLast(Comparator.naturalOrder()));
+                    case "roe" -> Comparator.comparing(ScreenedStockDto::roe, Comparator.nullsLast(Comparator.naturalOrder()));
+                    default -> Comparator.comparing(ScreenedStockDto::marketCap, Comparator.nullsLast(Comparator.naturalOrder()));
+                };
+
+        if ("desc".equalsIgnoreCase(request.direction())) {
+            comparator = comparator.reversed();
+        }
+
+        return comparator;
+    }
+    private Map<String, CompanyProfileDto> getProfileMap(List<String> symbols){
+        List<CompanyProfileDto> profiles = companyDataClient.getProfiles(symbols);
+        return profiles.stream().collect(Collectors.toMap(CompanyProfileDto::symbol, p->p));
+    }
+    private Map<String, FundamentalsDto> getFundamentalsMap(List<String> symbols){
+        List<FundamentalsDto> fundamentals = companyDataClient.getFundamentals(symbols);
+        return fundamentals.stream().collect(Collectors.toMap(FundamentalsDto::symbol, f->f));
+    }
+    private Map<String, PriceDto> getPricesMap(List<String> symbols){
+        List<PriceDto> prices = priceHistoryClient.getLatestPriceData(symbols);
+        return prices.stream().collect(Collectors.toMap(PriceDto::symbol, p -> p));
+    }
+    private boolean notInRange(
+            BigDecimal value,
+            BigDecimal min,
+            BigDecimal max) {
+
+        if (value == null) {
+            return true;
+        }
+
+        if (min != null && value.compareTo(min) < 0) {
+            return true;
+        }
+
+        return max != null && value.compareTo(max) > 0;
+    }
+    private boolean notInRange (
+            long value,
+            long min,
+            long max) {
+        return value <= max || value >= min;
     }
 
 }

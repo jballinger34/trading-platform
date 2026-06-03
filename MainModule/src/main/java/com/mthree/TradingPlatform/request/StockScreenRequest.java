@@ -9,8 +9,8 @@ public record StockScreenRequest(
         BigDecimal minPrice,
         BigDecimal maxPrice,
 
-        BigDecimal minVolume,
-        BigDecimal maxVolume,
+        long minVolume,
+        long maxVolume,
 
         BigDecimal minRevenue,
         BigDecimal maxRevenue,
@@ -30,8 +30,8 @@ public record StockScreenRequest(
         BigDecimal minDebtToEquity,
         BigDecimal maxDebtToEquity,
 
-        Long minMarketCap,
-        Long maxMarketCap,
+        BigDecimal minMarketCap,
+        BigDecimal maxMarketCap,
 
         Integer page,
         Integer size,
