@@ -112,8 +112,9 @@ public class ScreenerService {
     }
 
     private Comparator<ScreenedStockDto> buildComparator(StockScreenRequest request){
+        String sortBy = request.sortBy() == null ? "marketCap" : request.sortBy();
         Comparator<ScreenedStockDto> comparator =
-                switch (request.sortBy()) {
+                switch (sortBy) {
                     case "price" -> Comparator.comparing(ScreenedStockDto::price, Comparator.nullsLast(Comparator.naturalOrder()));
                     case "volume" -> Comparator.comparingLong(ScreenedStockDto::volume);
                     case "marketCap" -> Comparator.comparing(ScreenedStockDto::marketCap, Comparator.nullsLast(Comparator.naturalOrder()));
