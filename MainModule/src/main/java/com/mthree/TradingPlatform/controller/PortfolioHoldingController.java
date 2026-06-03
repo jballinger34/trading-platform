@@ -9,7 +9,7 @@ import com.mthree.TradingPlatform.dto.PortfolioSummaryDto;
 import java.util.List;
 
 @RestController
-@RequestMapping("/portfolio")
+@RequestMapping("/api/v1/portfolio")
 @RequiredArgsConstructor
 public class PortfolioHoldingController {
 
