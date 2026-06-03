@@ -141,11 +141,7 @@ public class ScreenerService {
         List<PriceDto> prices = priceHistoryClient.getLatestPriceData(symbols);
         return prices.stream().collect(Collectors.toMap(PriceDto::symbol, p -> p));
     }
-    private boolean notInRange(
-            BigDecimal value,
-            BigDecimal min,
-            BigDecimal max) {
-
+    private boolean notInRange(BigDecimal value, BigDecimal min, BigDecimal max) {
         if (value == null) {
             return true;
         }
@@ -156,11 +152,11 @@ public class ScreenerService {
 
         return max != null && value.compareTo(max) > 0;
     }
-    private boolean notInRange (
-            long value,
-            long min,
-            long max) {
-        return value <= max || value >= min;
+    private boolean notInRange (Long value, Long min, Long max) {
+        if(value == null) return true;
+        if(min != null && value < min) return true;
+        if(max != null && value > max) return true;
+        return false;
     }
 
 }

@@ -9,8 +9,8 @@ public record StockScreenRequest(
         BigDecimal minPrice,
         BigDecimal maxPrice,
 
-        long minVolume,
-        long maxVolume,
+        Long minVolume,
+        Long maxVolume,
 
         BigDecimal minRevenue,
         BigDecimal maxRevenue,
