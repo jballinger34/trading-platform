@@ -18,7 +18,7 @@ public class PortfolioHolding {
     private String userId;
 
     @Column(nullable = false)
-    private Long instrumentId;
+    private String symbol;
 
     @Column(nullable = false)
     private Integer quantity;

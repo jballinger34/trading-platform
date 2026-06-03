@@ -35,6 +35,14 @@ public class PortfolioHoldingController {
         return service.getHoldingById(id);
     }
 
+    @GetMapping("/quantity")
+    public Integer getHoldingQuantity(
+            @RequestParam String userId,
+            @RequestParam String symbol) {
+
+        return service.getHoldingQuantity(userId, symbol);
+    }
+
     @GetMapping("/user/{userId}")
     public List<PortfolioHoldingResponseDto> getByUserId(
             @PathVariable String userId) {

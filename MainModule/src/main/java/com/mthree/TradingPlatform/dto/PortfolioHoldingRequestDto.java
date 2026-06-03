@@ -8,7 +8,7 @@ import lombok.Setter;
 public class PortfolioHoldingRequestDto {
 
     private String userId;
-    private Long instrumentId;
+    private String symbol;
     private Integer quantity;
     private Double averagePrice;
 }

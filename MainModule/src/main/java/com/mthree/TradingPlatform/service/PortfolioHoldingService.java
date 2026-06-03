@@ -2,8 +2,10 @@ package com.mthree.TradingPlatform.service;
 
 import com.mthree.TradingPlatform.dto.PortfolioHoldingRequestDto;
 import com.mthree.TradingPlatform.dto.PortfolioHoldingResponseDto;
-import com.mthree.TradingPlatform.entity.PortfolioHolding;
 import com.mthree.TradingPlatform.dto.PortfolioSummaryDto;
+import com.mthree.TradingPlatform.entity.PortfolioHolding;
+import com.mthree.TradingPlatform.events.Trade;
+import com.mthree.TradingPlatform.events.TradeExecutedEvent;
 import com.mthree.TradingPlatform.repository.PortfolioHoldingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,11 +15,49 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-
-
 public class PortfolioHoldingService {
 
     private final PortfolioHoldingRepository repository;
+
+    public void processTrade(TradeExecutedEvent event) {
+
+        Trade trade = event.trade();
+
+        String buyerId = trade.buyerUserId().toString();
+        String sellerId = trade.sellerUserId().toString();
+        String symbol = trade.symbol();
+
+        PortfolioHolding buyerHolding =
+                repository.findByUserIdAndSymbol(buyerId, symbol)
+                        .orElseGet(() -> {
+                            PortfolioHolding holding =
+                                    new PortfolioHolding();
+
+                            holding.setUserId(buyerId);
+                            holding.setSymbol(symbol);
+                            holding.setQuantity(0);
+                            holding.setAveragePrice(
+                                    trade.price().doubleValue());
+
+                            return holding;
+                        });
+
+        buyerHolding.setQuantity(
+                buyerHolding.getQuantity()
+                        + (int) trade.quantity());
+
+        repository.save(buyerHolding);
+
+        repository.findByUserIdAndSymbol(sellerId, symbol)
+                .ifPresent(holding -> {
+
+                    holding.setQuantity(
+                            holding.getQuantity()
+                                    - (int) trade.quantity());
+
+                    repository.save(holding);
+                });
+    }
 
     public PortfolioHoldingResponseDto createHolding(
             PortfolioHoldingRequestDto request) {
@@ -25,7 +65,7 @@ public class PortfolioHoldingService {
         PortfolioHolding holding = new PortfolioHolding();
 
         holding.setUserId(request.getUserId());
-        holding.setInstrumentId(request.getInstrumentId());
+        holding.setSymbol(request.getSymbol());
         holding.setQuantity(request.getQuantity());
         holding.setAveragePrice(request.getAveragePrice());
 
@@ -69,7 +109,7 @@ public class PortfolioHoldingService {
                         new RuntimeException("Holding not found"));
 
         holding.setUserId(request.getUserId());
-        holding.setInstrumentId(request.getInstrumentId());
+        holding.setSymbol(request.getSymbol());
         holding.setQuantity(request.getQuantity());
         holding.setAveragePrice(request.getAveragePrice());
 
@@ -91,12 +131,23 @@ public class PortfolioHoldingService {
 
         dto.setId(holding.getId());
         dto.setUserId(holding.getUserId());
-        dto.setInstrumentId(holding.getInstrumentId());
+        dto.setSymbol(holding.getSymbol());
         dto.setQuantity(holding.getQuantity());
         dto.setAveragePrice(holding.getAveragePrice());
 
         return dto;
     }
+
+    public Integer getHoldingQuantity(
+            String userId,
+            String symbol) {
+
+        return repository
+                .findByUserIdAndSymbol(userId, symbol)
+                .map(PortfolioHolding::getQuantity)
+                .orElse(0);
+    }
+
 
     public PortfolioSummaryDto getPortfolioSummary(String userId) {
 
