@@ -1,12 +1,13 @@
 package com.mthree.TradingPlatform.controller;
 
-import com.mthree.TradingPlatform.dto.UserRequestDto;
+import com.mthree.TradingPlatform.dto.GithubUserRequest;
+import com.mthree.TradingPlatform.dto.UserUpdateRequest;
 import com.mthree.TradingPlatform.dto.UserResponseDto;
+
 
 import com.mthree.TradingPlatform.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import java.util.List;
 import java.util.UUID;
@@ -21,12 +22,10 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
-    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserRequestDto dto) {
-
-        UserResponseDto response = userService.createUser(dto);
-
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    @PostMapping("/users/oauth/github")
+    public ResponseEntity<UserResponseDto> getOrCreateGithubUser(@RequestBody GithubUserRequest request){
+        UserResponseDto user = userService.getOrCreateGithubUser(request);
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping
@@ -53,7 +52,7 @@ public class UserController {
     @PutMapping("/{id}")
     public UserResponseDto updateUser(
             @PathVariable UUID id,
-            @Valid @RequestBody UserRequestDto dto) {
+            @Valid @RequestBody UserUpdateRequest dto) {
 
         return userService.updateUser(id, dto);
     }

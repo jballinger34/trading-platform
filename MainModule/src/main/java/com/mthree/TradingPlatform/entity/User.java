@@ -29,7 +29,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(unique = true, nullable = false)
+    @Column
     private String email;
 
     private String name;
@@ -37,5 +37,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private OAuthProvider oauthProvider;
 
+    @Column(unique = true, nullable = false)
     private String oauthId;
 }

@@ -1,14 +1,16 @@
 package com.mthree.TradingPlatform.service;
 
-import com.mthree.TradingPlatform.dto.UserRequestDto;
+import com.mthree.TradingPlatform.dto.GithubUserRequest;
+import com.mthree.TradingPlatform.dto.UserUpdateRequest;
 import com.mthree.TradingPlatform.entity.User;
+import com.mthree.TradingPlatform.enums.OAuthProvider;
 import com.mthree.TradingPlatform.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import com.mthree.TradingPlatform.dto.UserResponseDto;
 import java.util.List;
 import java.util.UUID;
 import com.mthree.TradingPlatform.exception.UserNotFoundException;
-import com.mthree.TradingPlatform.exception.UserAlreadyExistsException;
+
 @Service
 public class UserService {
 
@@ -18,22 +20,20 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public UserResponseDto createUser(UserRequestDto dto) {
+    public UserResponseDto getOrCreateGithubUser(GithubUserRequest request){
+        OAuthProvider provider = OAuthProvider.GITHUB;
+        String oauthId = request.id();
 
-        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new UserNotFoundException("User not found");
-        }
-
-        User user = User.builder()
-                .username(dto.getUsername())
-                .email(dto.getEmail())
-                .name(dto.getName())
-                .oauthProvider(dto.getOauthProvider())
-                .oauthId(dto.getOauthId())
-                .build();
-
-        User savedUser = userRepository.save(user);
-
+        User savedUser = userRepository.findByOauthIdAndOauthProvider(oauthId, OAuthProvider.GITHUB)
+                .orElseGet(() -> {
+                    User user = User.builder()
+                                    .oauthProvider(provider)
+                                    .oauthId(oauthId)
+                                    .username(request.username())
+                                    .build();
+                    userRepository.save(user);
+                    return user;
+                });
         return UserResponseDto.builder()
                 .id(savedUser.getId())
                 .username(savedUser.getUsername())
@@ -66,16 +66,15 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public UserResponseDto updateUser(UUID id, UserRequestDto dto) {
+    public UserResponseDto updateUser(UUID id, UserUpdateRequest dto) {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setUsername(dto.getUsername());
-        user.setEmail(dto.getEmail());
-        user.setName(dto.getName());
-        user.setOauthProvider(dto.getOauthProvider());
-        user.setOauthId(dto.getOauthId());
+        if(dto.getUsername() != null) user.setUsername(dto.getUsername());
+        if(dto.getEmail() != null) user.setEmail(dto.getEmail());
+        if(dto.getName() != null) user.setName(dto.getName());
+
 
         User updatedUser = userRepository.save(user);
 
