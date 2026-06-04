@@ -3,7 +3,7 @@ package com.mthree.TradingPlatform.events;
 import java.time.Instant;
 import java.util.UUID;
 
-public record OrderCancelledEvent(
+public record OrderCancelSuccessEvent(
    UUID eventId,
    Instant timestamp,
 

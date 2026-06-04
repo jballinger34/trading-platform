@@ -1,9 +1,7 @@
 package com.mthree.TradingPlatform.service;
 
 import com.mthree.TradingPlatform.domain.model.*;
-import com.mthree.TradingPlatform.events.OrderCancelledEvent;
-import com.mthree.TradingPlatform.events.OrderProcessedEvent;
-import com.mthree.TradingPlatform.events.TradeExecutedEvent;
+import com.mthree.TradingPlatform.events.*;
 import com.mthree.TradingPlatform.kafka.EventProducer;
 import org.springframework.stereotype.Service;
 
@@ -59,8 +57,21 @@ public class OrderBookService {
     public void cancelOrder(String symbol, UUID orderId){
         OrderBook book = getOrCreateOrderBook(symbol);
         if(book == null) return;
-        book.cancel(orderId);
-        eventProducer.publishOrderCancelled(new OrderCancelledEvent(UUID.randomUUID(), Instant.now(), orderId, symbol));
+        Order cancelled = book.cancel(orderId);
+        if(cancelled == null) return;
+
+        if(cancelled.getSide() == OrderSide.SELL){
+            eventProducer.publishUnreserveStock(
+                    new UnreserveStockEvent(cancelled.getUserId(),symbol,cancelled.getRemainingQuantity()));
+        } else {
+            BigDecimal fundsToUnreserve = cancelled.getPrice().multiply(BigDecimal.valueOf(cancelled.getRemainingQuantity()));
+            eventProducer.publicUnreserveFunds(
+                    new UnreserveFundsEvent(cancelled.getUserId(), fundsToUnreserve)
+            );
+        }
+        //we no longer publish this here, wait for unreserve stock/funds success event back
+        //then consume it, and publish this in a seperate method
+        //eventProducer.publishOrderCancelled(new OrderCancelSuccessEvent(UUID.randomUUID(), Instant.now(), orderId, symbol));
     }
     public OrderBook getOrCreateOrderBook(String symbol){
         return books.computeIfAbsent(symbol, OrderBook::new);

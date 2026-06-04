@@ -97,10 +97,10 @@ public class OrderBook {
         }
     }
 
-    public void cancel(UUID orderId) {
+    public Order cancel(UUID orderId) {
 
         Order order = orderIndex.get(orderId);
-        if (order == null) return;
+        if (order == null) return null;
         order.setCancelled();
 
 
@@ -115,6 +115,7 @@ public class OrderBook {
         }
 
         orderIndex.remove(orderId);
+        return order;
     }
 
 }
