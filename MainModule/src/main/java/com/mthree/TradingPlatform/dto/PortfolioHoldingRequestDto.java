@@ -11,4 +11,5 @@ public class PortfolioHoldingRequestDto {
     private String symbol;
     private Integer quantity;
     private Double averagePrice;
+    private Integer reservedQuantity;
 }

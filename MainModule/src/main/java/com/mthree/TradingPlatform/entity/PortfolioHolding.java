@@ -24,5 +24,8 @@ public class PortfolioHolding {
     private Integer quantity;
 
     @Column(nullable = false)
+    private Integer reservedQuantity = 0;
+
+    @Column(nullable = false)
     private Double averagePrice;
 }

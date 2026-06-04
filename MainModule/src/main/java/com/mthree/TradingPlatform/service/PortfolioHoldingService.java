@@ -9,7 +9,7 @@ import com.mthree.TradingPlatform.events.TradeExecutedEvent;
 import com.mthree.TradingPlatform.repository.PortfolioHoldingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import com.mthree.TradingPlatform.events.ReserveStockEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,6 +64,11 @@ public class PortfolioHoldingService {
 
         PortfolioHolding holding = new PortfolioHolding();
 
+        holding.setReservedQuantity(
+                request.getReservedQuantity() == null
+                        ? 0
+                        : request.getReservedQuantity()
+        );
         holding.setUserId(request.getUserId());
         holding.setSymbol(request.getSymbol());
         holding.setQuantity(request.getQuantity());
@@ -72,6 +77,7 @@ public class PortfolioHoldingService {
         PortfolioHolding saved = repository.save(holding);
 
         return mapToResponse(saved);
+
     }
 
     public List<PortfolioHoldingResponseDto> getAllHoldings() {
@@ -108,6 +114,9 @@ public class PortfolioHoldingService {
                 .orElseThrow(() ->
                         new RuntimeException("Holding not found"));
 
+        holding.setReservedQuantity(
+                request.getReservedQuantity()
+        );
         holding.setUserId(request.getUserId());
         holding.setSymbol(request.getSymbol());
         holding.setQuantity(request.getQuantity());
@@ -128,6 +137,10 @@ public class PortfolioHoldingService {
 
         PortfolioHoldingResponseDto dto =
                 new PortfolioHoldingResponseDto();
+
+        dto.setReservedQuantity(
+                holding.getReservedQuantity()
+        );
 
         dto.setId(holding.getId());
         dto.setUserId(holding.getUserId());
@@ -172,5 +185,40 @@ public class PortfolioHoldingService {
         dto.setTotalInvestment(totalInvestment);
 
         return dto;
+    }
+
+    public void reserveStock(
+            ReserveStockEvent event) {
+
+        String userId =
+                event.userId().toString();
+
+        PortfolioHolding holding =
+                repository.findByUserIdAndSymbol(
+                                userId,
+                                event.symbol()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Holding not found"));
+
+        int quantity =
+                event.quantity().intValue();
+
+        if (holding.getQuantity() < quantity) {
+            throw new RuntimeException(
+                    "Insufficient shares");
+        }
+
+        holding.setQuantity(
+                holding.getQuantity() - quantity
+        );
+
+        holding.setReservedQuantity(
+                holding.getReservedQuantity()
+                        + quantity
+        );
+
+        repository.save(holding);
     }
 }
