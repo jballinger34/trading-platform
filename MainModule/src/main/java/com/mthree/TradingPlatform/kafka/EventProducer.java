@@ -1,5 +1,6 @@
 package com.mthree.TradingPlatform.kafka;
 
+import com.mthree.TradingPlatform.events.OrderCancelCommand;
 import com.mthree.TradingPlatform.events.OrderPlacedEvent;
 import com.mthree.TradingPlatform.events.ReserveFundsEvent;
 import com.mthree.TradingPlatform.events.ReserveStockEvent;
@@ -27,6 +28,9 @@ public class EventProducer {
 
     public void publishOrderPlaced(OrderPlacedEvent event){
         publish("orders.placed", event);
+    }
+    public void publishCancelOrder(OrderCancelCommand command){
+        publish("orders.cancel", command);
     }
 
 }

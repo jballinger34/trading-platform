@@ -3,7 +3,9 @@ package com.mthree.TradingPlatform.service;
 import com.mthree.TradingPlatform.client.PortfolioClient;
 import com.mthree.TradingPlatform.client.WalletClient;
 import com.mthree.TradingPlatform.domain.model.OrderSide;
+import com.mthree.TradingPlatform.dto.CancelOrderRequest;
 import com.mthree.TradingPlatform.dto.PlaceOrderRequest;
+import com.mthree.TradingPlatform.events.OrderCancelCommand;
 import com.mthree.TradingPlatform.events.OrderPlacedEvent;
 import com.mthree.TradingPlatform.events.ReserveFundsEvent;
 import com.mthree.TradingPlatform.events.ReserveStockEvent;
@@ -34,6 +36,9 @@ public class OrderService {
         } else {
             placeBuyOrder(request);
         }
+    }
+    public void cancelOrder(CancelOrderRequest request){
+        eventProducer.publishCancelOrder(new OrderCancelCommand(request.userId(), request.symbol(), request.orderId()));
     }
 
     private void placeBuyOrder(PlaceOrderRequest request) {
