@@ -22,7 +22,7 @@ public class UserService {
 
     public UserResponseDto getOrCreateGithubUser(GithubUserRequest request){
         OAuthProvider provider = OAuthProvider.GITHUB;
-        String oauthId = request.id();
+        String oauthId = request.githubId();
 
         User savedUser = userRepository.findByOauthIdAndOauthProvider(oauthId, OAuthProvider.GITHUB)
                 .orElseGet(() -> {
