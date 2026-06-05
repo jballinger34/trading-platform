@@ -82,4 +82,100 @@ class WalletServiceTest {
                 exception.getMessage()
         );
     }
+
+    @Test
+    void createWalletCreatesNewWallet() {
+
+        Wallet wallet = new Wallet();
+        wallet.setUserId("user1");
+        wallet.setBalance(1000.0);
+
+        when(repository.save(any(Wallet.class)))
+                .thenReturn(wallet);
+
+        Wallet result =
+                walletService.createWallet(
+                        "user1",
+                        1000.0
+                );
+
+        assertEquals("user1", result.getUserId());
+        assertEquals(1000.0, result.getBalance());
+
+        verify(repository).save(any(Wallet.class));
+    }
+
+    @Test
+    void depositIncreasesBalance() {
+
+        Wallet wallet = new Wallet();
+
+        wallet.setUserId("user1");
+        wallet.setBalance(1000.0);
+
+        when(repository.findByUserId("user1"))
+                .thenReturn(Optional.of(wallet));
+
+        walletService.deposit(
+                "user1",
+                500.0
+        );
+
+        assertEquals(
+                1500.0,
+                wallet.getBalance()
+        );
+
+        verify(repository).save(wallet);
+    }
+
+    @Test
+    void withdrawReducesBalance() {
+
+        Wallet wallet = new Wallet();
+
+        wallet.setUserId("user1");
+        wallet.setBalance(1000.0);
+
+        when(repository.findByUserId("user1"))
+                .thenReturn(Optional.of(wallet));
+
+        walletService.withdraw(
+                "user1",
+                300.0
+        );
+
+        assertEquals(
+                700.0,
+                wallet.getBalance()
+        );
+
+        verify(repository).save(wallet);
+    }
+
+    @Test
+    void withdrawThrowsWhenInsufficientBalance() {
+
+        Wallet wallet = new Wallet();
+
+        wallet.setUserId("user1");
+        wallet.setBalance(100.0);
+
+        when(repository.findByUserId("user1"))
+                .thenReturn(Optional.of(wallet));
+
+        RuntimeException exception =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> walletService.withdraw(
+                                "user1",
+                                500.0
+                        )
+                );
+
+        assertEquals(
+                "Insufficient balance",
+                exception.getMessage()
+        );
+    }
 }

@@ -82,4 +82,45 @@ public class WalletService {
 
         return repository.save(wallet);
     }
+
+    public Wallet deposit(
+            String userId,
+            Double amount) {
+
+        Wallet wallet = repository.findByUserId(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("Wallet not found"));
+
+        wallet.setBalance(
+                wallet.getBalance() + amount
+        );
+
+        return repository.save(wallet);
+    }
+
+    public Wallet withdraw(
+            String userId,
+            Double amount) {
+
+        Wallet wallet = repository.findByUserId(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("Wallet not found"));
+
+        if (wallet.getBalance() < amount) {
+            throw new RuntimeException("Insufficient balance");
+        }
+
+        wallet.setBalance(
+                wallet.getBalance() - amount
+        );
+
+        return repository.save(wallet);
+    }
+
+    public Wallet getWallet(String userId) {
+
+        return repository.findByUserId(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("Wallet not found"));
+    }
 }
