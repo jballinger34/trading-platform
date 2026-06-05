@@ -18,8 +18,8 @@ public class OrderConsumer {
 
     @KafkaListener(topics = "orders.placed")
     public void listen(OrderPlacedEvent event){
-        Order order = new Order(event.userId(), event.quantity(), event.price(), event.orderSide());
-        this.service.processOrder(event.symbol(), order);
+        Order order = Order.build(event);
+        this.service.processOrder(order);
     }
 
     @KafkaListener(topics = "orders.cancel")
