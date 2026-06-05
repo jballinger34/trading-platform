@@ -11,8 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
@@ -20,13 +18,7 @@ import java.security.interfaces.RSAPublicKey;
 public class JwtConfig {
 
     @Bean
-    public JwtEncoder jwtEncoder() {
-
-        // for now we generate a simple keypair in-memory
-        KeyPair keyPair = generateRsaKey();
-
-        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-        RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
+    public JwtEncoder jwtEncoder(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
 
         JWK jwk = new RSAKey.Builder(publicKey)
                 .privateKey(privateKey)
@@ -37,17 +29,6 @@ public class JwtConfig {
                 new ImmutableJWKSet<>(new JWKSet(jwk));
 
         return new NimbusJwtEncoder(jwkSource);
-    }
-
-    private KeyPair generateRsaKey() {
-        try {
-            KeyPairGenerator generator =
-                    KeyPairGenerator.getInstance("RSA");
-            generator.initialize(2048);
-            return generator.generateKeyPair();
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
     }
 
 }
