@@ -3,17 +3,19 @@ package com.mthree.TradingPlatform.service;
 import com.mthree.TradingPlatform.client.PortfolioClient;
 import com.mthree.TradingPlatform.client.WalletClient;
 import com.mthree.TradingPlatform.domain.model.OrderSide;
-import com.mthree.TradingPlatform.dto.CancelOrderRequest;
-import com.mthree.TradingPlatform.dto.PlaceOrderRequest;
+import com.mthree.TradingPlatform.requests.CancelOrderRequest;
+import com.mthree.TradingPlatform.requests.PlaceOrderRequest;
 import com.mthree.TradingPlatform.events.OrderCancelCommand;
 import com.mthree.TradingPlatform.events.OrderPlacedEvent;
 import com.mthree.TradingPlatform.events.ReserveFundsEvent;
 import com.mthree.TradingPlatform.events.ReserveStockEvent;
 import com.mthree.TradingPlatform.kafka.EventProducer;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@Service
 public class OrderService {
 
     //TODO
@@ -30,21 +32,20 @@ public class OrderService {
         this.eventProducer = eventProducer;
     }
 
-    public void placeOrder(PlaceOrderRequest request) {
+    public void placeOrder(UUID userId, PlaceOrderRequest request) {
         if (request.orderSide() == OrderSide.SELL) {
-            placeSellOrder(request);
+            placeSellOrder(userId, request);
         } else {
-            placeBuyOrder(request);
+            placeBuyOrder(userId, request);
         }
     }
-    public void cancelOrder(CancelOrderRequest request){
-        eventProducer.publishCancelOrder(new OrderCancelCommand(request.userId(), request.symbol(), request.orderId()));
+    public void cancelOrder(UUID userId, CancelOrderRequest request){
+        eventProducer.publishCancelOrder(new OrderCancelCommand(userId, request.symbol(), request.orderId()));
     }
 
-    private void placeBuyOrder(PlaceOrderRequest request) {
+    private void placeBuyOrder(UUID userId, PlaceOrderRequest request) {
         if (request == null || request.orderSide() != OrderSide.BUY) return;
         //check if they have the funds
-        UUID userId = request.userId();
 
         BigDecimal totalPrice = request.price().multiply(BigDecimal.valueOf(request.quantity()));
         BigDecimal funds = walletClient.getFunds(userId);
@@ -59,9 +60,8 @@ public class OrderService {
         eventProducer.publishOrderPlaced(OrderPlacedEvent.create(request.symbol(), userId, request.quantity(), request.price(), request.orderSide()));
     }
 
-    private void placeSellOrder(PlaceOrderRequest request) {
+    private void placeSellOrder(UUID userId, PlaceOrderRequest request) {
         if (request == null || request.orderSide() != OrderSide.SELL) return;
-        UUID userId = request.userId();
 
         long sellQuantity = request.quantity();
         long portfolioQuantity = portfolioClient.getHoldingQuantity(userId, request.symbol());

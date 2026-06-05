@@ -1,4 +1,4 @@
-package com.mthree.TradingPlatform.dto;
+package com.mthree.TradingPlatform.requests;
 
 import com.mthree.TradingPlatform.domain.model.OrderSide;
 
@@ -7,8 +7,6 @@ import java.util.UUID;
 
 public record PlaceOrderRequest(
         String symbol,
-
-        UUID userId,
 
         long quantity,
         BigDecimal price,
