@@ -1,5 +1,5 @@
 package com.mthree.TradingPlatform.wallet.service;
-
+import com.mthree.TradingPlatform.wallet.events.UnreserveFundsEvent;
 import com.mthree.TradingPlatform.wallet.entity.Wallet;
 import com.mthree.TradingPlatform.wallet.events.ReserveFundsEvent;
 import com.mthree.TradingPlatform.wallet.repository.WalletRepository;
@@ -177,5 +177,41 @@ class WalletServiceTest {
                 "Insufficient balance",
                 exception.getMessage()
         );
+    }
+
+    @Test
+    void unreserveFundsMovesReservedToBalance() {
+
+        String userId =
+                UUID.randomUUID().toString();
+
+        Wallet wallet = new Wallet();
+
+        wallet.setUserId(userId);
+        wallet.setBalance(500.0);
+        wallet.setReservedBalance(300.0);
+
+        when(repository.findByUserId(userId))
+                .thenReturn(Optional.of(wallet));
+
+        UnreserveFundsEvent event =
+                new UnreserveFundsEvent(
+                        UUID.fromString(userId),
+                        BigDecimal.valueOf(100)
+                );
+
+        walletService.unreserveFunds(event);
+
+        assertEquals(
+                600.0,
+                wallet.getBalance()
+        );
+
+        assertEquals(
+                200.0,
+                wallet.getReservedBalance()
+        );
+
+        verify(repository).save(wallet);
     }
 }

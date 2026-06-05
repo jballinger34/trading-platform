@@ -1,5 +1,6 @@
 package com.mthree.TradingPlatform.wallet.service;
 
+import com.mthree.TradingPlatform.wallet.events.UnreserveFundsEvent;
 import com.mthree.TradingPlatform.wallet.events.Trade;
 import com.mthree.TradingPlatform.wallet.events.TradeExecutedEvent;
 import com.mthree.TradingPlatform.wallet.entity.Wallet;
@@ -122,5 +123,36 @@ public class WalletService {
         return repository.findByUserId(userId)
                 .orElseThrow(() ->
                         new RuntimeException("Wallet not found"));
+    }
+
+    public void unreserveFunds(
+            UnreserveFundsEvent event) {
+
+        String userId =
+                event.userId().toString();
+
+        Wallet wallet =
+                repository.findByUserId(userId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Wallet not found"));
+
+        double amount =
+                event.amount().doubleValue();
+
+        if (wallet.getReservedBalance() < amount) {
+            throw new RuntimeException(
+                    "Insufficient reserved balance");
+        }
+
+        wallet.setReservedBalance(
+                wallet.getReservedBalance() - amount
+        );
+
+        wallet.setBalance(
+                wallet.getBalance() + amount
+        );
+
+        repository.save(wallet);
     }
 }
