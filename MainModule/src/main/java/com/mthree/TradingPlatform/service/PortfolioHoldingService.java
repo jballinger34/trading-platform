@@ -1,5 +1,5 @@
 package com.mthree.TradingPlatform.service;
-
+import com.mthree.TradingPlatform.events.UnreserveStockEvent;
 import com.mthree.TradingPlatform.dto.PortfolioHoldingRequestDto;
 import com.mthree.TradingPlatform.dto.PortfolioHoldingResponseDto;
 import com.mthree.TradingPlatform.dto.PortfolioSummaryDto;
@@ -216,6 +216,42 @@ public class PortfolioHoldingService {
 
         holding.setReservedQuantity(
                 holding.getReservedQuantity()
+                        + quantity
+        );
+
+        repository.save(holding);
+    }
+
+    public void unreserveStock(
+            UnreserveStockEvent event) {
+
+        String userId =
+                event.userId().toString();
+
+        PortfolioHolding holding =
+                repository.findByUserIdAndSymbol(
+                                userId,
+                                event.symbol()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Holding not found"));
+
+        int quantity =
+                event.quantity().intValue();
+
+        if (holding.getReservedQuantity() < quantity) {
+            throw new RuntimeException(
+                    "Insufficient reserved shares");
+        }
+
+        holding.setReservedQuantity(
+                holding.getReservedQuantity()
+                        - quantity
+        );
+
+        holding.setQuantity(
+                holding.getQuantity()
                         + quantity
         );
 
