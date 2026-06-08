@@ -14,8 +14,7 @@ public class UserServiceClient {
 
 
     public UserServiceClient(RestClient.Builder builder){
-        //TODO CHANGE THIS TO URL OF USER SERVICE
-        this.restClient = builder.baseUrl("http://localhost:8081").build();
+        this.restClient = builder.baseUrl("http://localhost:8082").build();
     }
     public UUID findOrCreateGithubUser(String githubId, String username){
         UserResponse response = restClient.post()
