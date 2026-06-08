@@ -19,6 +19,10 @@ public class OrderBookManager {
         this.orderRepository = orderRepository;
     }
 
+    public List<Order> getOrdersByUser(UUID user){
+        return orderRepository.findAllByUserId(user);
+    }
+
     public List<Trade> match(Order incoming){
         String symbol = incoming.getSymbol();
         OrderBook book = getBook(symbol);

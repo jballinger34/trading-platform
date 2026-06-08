@@ -11,4 +11,5 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findBySymbolAndStatusIn(String symbol, List<OrderStatus> statuses);
 
+    List<Order> findAllByUserId(UUID userId);
 }

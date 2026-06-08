@@ -1,6 +1,7 @@
 package com.mthree.TradingPlatform.service;
 
 import com.mthree.TradingPlatform.domain.model.*;
+import com.mthree.TradingPlatform.dto.OrderDto;
 import com.mthree.TradingPlatform.events.*;
 import com.mthree.TradingPlatform.kafka.EventProducer;
 import com.mthree.TradingPlatform.manager.OrderBookManager;
@@ -23,6 +24,10 @@ public class OrderBookService {
     public OrderBookService(OrderBookManager orderBookManager, EventProducer eventProducer) {
         this.orderBookManager = orderBookManager;
         this.eventProducer = eventProducer;
+    }
+
+    public List<OrderDto> getOrdersByUser(UUID userId){
+        return orderBookManager.getOrdersByUser(userId).stream().map(OrderDto::from).toList();
     }
 
     public void processOrder(Order order) {
