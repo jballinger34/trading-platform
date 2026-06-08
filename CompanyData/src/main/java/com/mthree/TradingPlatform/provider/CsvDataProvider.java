@@ -3,6 +3,8 @@ package com.mthree.TradingPlatform.provider;
 import com.mthree.TradingPlatform.dto.CompanyProfileDto;
 import com.mthree.TradingPlatform.dto.FundamentalsDto;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -13,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class CsvDataProvider implements DataProvider {
 
     private final Map<String, CompanyProfileDto> companyMap = new HashMap<>();

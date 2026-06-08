@@ -16,7 +16,7 @@ public class KeyConfig {
     @Bean
     public RSAPrivateKey privateKey() throws Exception {
         String key = new String(
-                getClass().getResourceAsStream("/private-key.pem").readAllBytes()
+                getClass().getResourceAsStream("/secret/private-key.pem").readAllBytes()
         );
 
         key = key
