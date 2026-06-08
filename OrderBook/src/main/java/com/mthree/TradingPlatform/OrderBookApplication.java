@@ -5,10 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 @SpringBootApplication
-public class TradingPlatformApplication {
+public class OrderBookApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TradingPlatformApplication.class, args);
+		SpringApplication.run(OrderBookApplication.class, args);
 	}
 
 }
