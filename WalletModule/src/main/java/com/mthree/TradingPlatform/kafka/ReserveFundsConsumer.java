@@ -1,7 +1,7 @@
-package com.mthree.TradingPlatform.wallet.kafka;
+package com.mthree.TradingPlatform.kafka;
 
-import com.mthree.TradingPlatform.wallet.events.ReserveFundsEvent;
-import com.mthree.TradingPlatform.wallet.service.WalletService;
+import com.mthree.TradingPlatform.events.ReserveFundsEvent;
+import com.mthree.TradingPlatform.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;

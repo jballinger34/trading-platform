@@ -1,4 +1,4 @@
-package com.mthree.TradingPlatform.wallet.events;
+package com.mthree.TradingPlatform.events;
 
 import java.math.BigDecimal;
 import java.util.UUID;

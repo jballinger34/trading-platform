@@ -1,11 +1,11 @@
-package com.mthree.TradingPlatform.wallet.service;
+package com.mthree.TradingPlatform.service;
 
-import com.mthree.TradingPlatform.wallet.events.UnreserveFundsEvent;
-import com.mthree.TradingPlatform.wallet.events.Trade;
-import com.mthree.TradingPlatform.wallet.events.TradeExecutedEvent;
-import com.mthree.TradingPlatform.wallet.entity.Wallet;
-import com.mthree.TradingPlatform.wallet.events.ReserveFundsEvent;
-import com.mthree.TradingPlatform.wallet.repository.WalletRepository;
+import com.mthree.TradingPlatform.events.UnreserveFundsEvent;
+import com.mthree.TradingPlatform.events.Trade;
+import com.mthree.TradingPlatform.events.TradeExecutedEvent;
+import com.mthree.TradingPlatform.entity.Wallet;
+import com.mthree.TradingPlatform.events.ReserveFundsEvent;
+import com.mthree.TradingPlatform.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

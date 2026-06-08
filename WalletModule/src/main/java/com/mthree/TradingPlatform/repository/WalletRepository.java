@@ -1,6 +1,6 @@
-package com.mthree.TradingPlatform.wallet.repository;
+package com.mthree.TradingPlatform.repository;
 
-import com.mthree.TradingPlatform.wallet.entity.Wallet;
+import com.mthree.TradingPlatform.entity.Wallet;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

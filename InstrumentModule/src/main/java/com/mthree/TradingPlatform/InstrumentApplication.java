@@ -6,9 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 
-public class CompanyDataApp {
+public class InstrumentApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CompanyDataApp.class, args);
+		SpringApplication.run(InstrumentApplication.class, args);
 	}
 }

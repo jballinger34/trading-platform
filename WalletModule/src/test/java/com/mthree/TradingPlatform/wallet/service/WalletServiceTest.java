@@ -1,8 +1,9 @@
 package com.mthree.TradingPlatform.wallet.service;
-import com.mthree.TradingPlatform.wallet.events.UnreserveFundsEvent;
-import com.mthree.TradingPlatform.wallet.entity.Wallet;
-import com.mthree.TradingPlatform.wallet.events.ReserveFundsEvent;
-import com.mthree.TradingPlatform.wallet.repository.WalletRepository;
+import com.mthree.TradingPlatform.events.UnreserveFundsEvent;
+import com.mthree.TradingPlatform.entity.Wallet;
+import com.mthree.TradingPlatform.events.ReserveFundsEvent;
+import com.mthree.TradingPlatform.repository.WalletRepository;
+import com.mthree.TradingPlatform.service.WalletService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

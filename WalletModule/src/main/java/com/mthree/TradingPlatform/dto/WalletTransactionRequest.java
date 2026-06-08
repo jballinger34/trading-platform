@@ -1,4 +1,4 @@
-package com.mthree.TradingPlatform.wallet.dto;
+package com.mthree.TradingPlatform.dto;
 
 import lombok.Getter;
 import lombok.Setter;

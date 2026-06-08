@@ -1,9 +1,9 @@
-package com.mthree.TradingPlatform.wallet.events;
+package com.mthree.TradingPlatform.events;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public record UnreserveFundsEvent(
+public record ReserveFundsEvent(
         UUID userId,
         BigDecimal amount
 ) {

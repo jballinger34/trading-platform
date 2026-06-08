@@ -1,4 +1,4 @@
-package com.mthree.TradingPlatform.wallet.entity;
+package com.mthree.TradingPlatform.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,11 +1,11 @@
-package com.mthree.TradingPlatform.wallet.controller;
+package com.mthree.TradingPlatform.controller;
 
-import com.mthree.TradingPlatform.wallet.dto.CreateWalletRequest;
-import com.mthree.TradingPlatform.wallet.entity.Wallet;
-import com.mthree.TradingPlatform.wallet.service.WalletService;
+import com.mthree.TradingPlatform.dto.CreateWalletRequest;
+import com.mthree.TradingPlatform.entity.Wallet;
+import com.mthree.TradingPlatform.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import com.mthree.TradingPlatform.wallet.dto.WalletTransactionRequest;
+import com.mthree.TradingPlatform.dto.WalletTransactionRequest;
 @RestController
 @RequestMapping("/wallet")
 @RequiredArgsConstructor
