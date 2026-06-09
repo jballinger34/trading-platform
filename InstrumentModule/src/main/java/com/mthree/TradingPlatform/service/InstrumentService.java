@@ -3,6 +3,8 @@ package com.mthree.TradingPlatform.service;
 import com.mthree.TradingPlatform.dto.InstrumentRequestDto;
 import com.mthree.TradingPlatform.dto.InstrumentResponseDto;
 import com.mthree.TradingPlatform.entity.Instrument;
+import com.mthree.TradingPlatform.event.InstrumentCreatedEvent;
+import com.mthree.TradingPlatform.kafka.InstrumentCreatedProducer;
 import com.mthree.TradingPlatform.repository.InstrumentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 public class InstrumentService {
 
     private final InstrumentRepository instrumentRepository;
+    private final InstrumentCreatedProducer instrumentCreatedProducer;
 
     public InstrumentResponseDto createInstrument(InstrumentRequestDto requestDto) {
 
@@ -27,6 +30,7 @@ public class InstrumentService {
         instrument.setExchange(requestDto.getExchange());
 
         Instrument saved = instrumentRepository.save(instrument);
+        instrumentCreatedProducer.publishInstrumentCreated(new InstrumentCreatedEvent(instrument.getSymbol(), instrument.getExchange()));
 
         return mapToResponse(saved);
     }
