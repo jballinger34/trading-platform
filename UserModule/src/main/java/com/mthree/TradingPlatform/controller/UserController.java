@@ -22,7 +22,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/users/oauth/github")
+    @PostMapping("/oauth/github")
     public ResponseEntity<UserResponseDto> getOrCreateGithubUser(@RequestBody GithubUserRequest request){
         UserResponseDto user = userService.getOrCreateGithubUser(request);
         return ResponseEntity.ok(user);
