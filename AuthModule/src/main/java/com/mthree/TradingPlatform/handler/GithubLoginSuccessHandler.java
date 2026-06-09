@@ -40,12 +40,6 @@ public class GithubLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         String jwt = jwtService.generateToken(userId);
 
-        Cookie cookie = new Cookie("access_token", jwt);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(3500);
-
-        response.addCookie(cookie);
-        response.sendRedirect("http://localhost:3000");
+        response.sendRedirect("http://localhost:3000/auth/callback?token=" + jwt);
     }
 }
