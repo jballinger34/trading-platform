@@ -80,23 +80,6 @@ public class PortfolioHoldingService {
 
     }
 
-    public List<PortfolioHoldingResponseDto> getAllHoldings() {
-
-        return repository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
-
-    public PortfolioHoldingResponseDto getHoldingById(Long id) {
-
-        PortfolioHolding holding = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Holding not found"));
-
-        return mapToResponse(holding);
-    }
-
     public List<PortfolioHoldingResponseDto> getHoldingsByUserId(
             String userId) {
 
@@ -104,32 +87,6 @@ public class PortfolioHoldingService {
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
-    }
-
-    public PortfolioHoldingResponseDto updateHolding(
-            Long id,
-            PortfolioHoldingRequestDto request) {
-
-        PortfolioHolding holding = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Holding not found"));
-
-        holding.setReservedQuantity(
-                request.getReservedQuantity()
-        );
-        holding.setUserId(request.getUserId());
-        holding.setSymbol(request.getSymbol());
-        holding.setQuantity(request.getQuantity());
-        holding.setAveragePrice(request.getAveragePrice());
-
-        PortfolioHolding updated = repository.save(holding);
-
-        return mapToResponse(updated);
-    }
-
-    public void deleteHolding(Long id) {
-
-        repository.deleteById(id);
     }
 
     private PortfolioHoldingResponseDto mapToResponse(
