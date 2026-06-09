@@ -12,13 +12,8 @@ public class UnreserveStockConsumer {
 
     private final PortfolioHoldingService service;
 
-    @KafkaListener(
-            topics = "stock.unreserve",
-            groupId = "portfolio-service"
-    )
-    public void process(
-            UnreserveStockEvent event) {
-
+    @KafkaListener(topics = "portfolio.unreserve")
+    public void process(UnreserveStockEvent event) {
         service.unreserveStock(event);
     }
 }

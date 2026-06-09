@@ -12,12 +12,8 @@ public class ReserveStockConsumer {
 
     private final PortfolioHoldingService service;
 
-    @KafkaListener(
-            topics = "portfolio.reserve-stock",
-            groupId = "portfolio-service"
-    )
+    @KafkaListener(topics = "portfolio.reserve")
     public void consume(ReserveStockEvent event) {
-
         service.reserveStock(event);
     }
 }

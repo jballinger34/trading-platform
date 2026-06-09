@@ -12,10 +12,7 @@ public class TradeExecutedConsumer {
 
     private final PortfolioHoldingService portfolioHoldingService;
 
-    @KafkaListener(
-            topics = "trades.executed",
-            groupId = "portfolio-service"
-    )
+    @KafkaListener(topics = "trades.executed")
     public void processTrade(TradeExecutedEvent event) {
         portfolioHoldingService.processTrade(event);
     }
