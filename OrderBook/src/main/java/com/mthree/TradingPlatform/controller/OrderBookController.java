@@ -22,7 +22,7 @@ public class OrderBookController {
         this.orderBookService = orderBookService;
     }
 
-    @RequestMapping("/orders/{uuid}")
+    @RequestMapping("/orders")
     public ResponseEntity<List<OrderDto>> getOrdersByUser(@AuthenticationPrincipal Jwt jwt){
         UUID uuid = UUID.fromString(jwt.getSubject());
 
