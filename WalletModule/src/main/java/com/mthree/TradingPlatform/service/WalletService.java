@@ -118,11 +118,8 @@ public class WalletService {
         return repository.save(wallet);
     }
 
-    public Wallet getWallet(String userId) {
-
-        return repository.findByUserId(userId)
-                .orElseThrow(() ->
-                        new RuntimeException("Wallet not found"));
+    public Wallet getorCreateWallet(String userId) {
+        return repository.findByUserId(userId).orElseGet(() -> createWallet(userId, 0.0));
     }
 
     public void unreserveFunds(

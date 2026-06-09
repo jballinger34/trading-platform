@@ -12,12 +12,8 @@ public class ReserveFundsConsumer {
 
     private final WalletService walletService;
 
-    @KafkaListener(
-            topics = "wallet.reserve",
-            groupId = "wallet-service"
-    )
+    @KafkaListener(topics = "wallet.reserve")
     public void consume(ReserveFundsEvent event) {
-
         walletService.reserveFunds(event);
     }
 }

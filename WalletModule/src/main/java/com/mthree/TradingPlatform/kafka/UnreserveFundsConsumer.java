@@ -12,13 +12,8 @@ public class UnreserveFundsConsumer {
 
     private final WalletService walletService;
 
-    @KafkaListener(
-            topics = "funds.unreserve",
-            groupId = "wallet-service"
-    )
-    public void process(
-            UnreserveFundsEvent event) {
-
+    @KafkaListener(topics = "wallet.unreserve")
+    public void process(UnreserveFundsEvent event) {
         walletService.unreserveFunds(event);
     }
 }

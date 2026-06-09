@@ -12,12 +12,8 @@ public class TradeExecutedConsumer {
 
     private final WalletService walletService;
 
-    @KafkaListener(
-            topics = "trades.executed",
-            groupId = "wallet-service"
-    )
+    @KafkaListener(topics = "trades.executed")
     public void consume(TradeExecutedEvent event) {
-
         walletService.processTrade(event);
     }
 }
