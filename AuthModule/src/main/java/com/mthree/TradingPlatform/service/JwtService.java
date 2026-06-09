@@ -25,7 +25,6 @@ public class JwtService {
                 .subject(userId.toString())
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(3600))
-                .issuer("auth-service")
                 .build();
 
         return encoder

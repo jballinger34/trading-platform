@@ -3,6 +3,7 @@ package com.mthree.TradingPlatform.handler;
 import com.mthree.TradingPlatform.client.UserServiceClient;
 import com.mthree.TradingPlatform.service.JwtService;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
@@ -39,13 +40,12 @@ public class GithubLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         String jwt = jwtService.generateToken(userId);
 
-        response.setContentType("application/json");
-        response.getWriter().write("""
-            {
-                "access_token": "%s",
-                "token_type": "Bearer",
-                "expires_in": 3600
-            }
-        """.formatted(jwt));
+        Cookie cookie = new Cookie("access_token", jwt);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(3500);
+
+        response.addCookie(cookie);
+        response.sendRedirect("http://localhost:3000");
     }
 }
