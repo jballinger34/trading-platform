@@ -12,7 +12,7 @@ public record ScreenedStockDto(
 
         BigDecimal price,
         Instant priceTime,
-        long volume,
+        Long volume,
 
         BigDecimal marketCap,
         BigDecimal revenue,

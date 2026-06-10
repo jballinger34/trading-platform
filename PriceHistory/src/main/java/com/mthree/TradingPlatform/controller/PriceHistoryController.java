@@ -23,7 +23,7 @@ public class PriceHistoryController {
         return ResponseEntity.ok(candle);
     }
     @GetMapping("/latest")
-    public ResponseEntity<List<StockCandleDto>> getBatchLatestCandle(List<String> symbols){
+    public ResponseEntity<List<StockCandleDto>> getBatchLatestCandle(@RequestParam List<String> symbols){
         List<StockCandleDto> candle = service.getBatchLatestPriceBySymbols(symbols);
         return ResponseEntity.ok(candle);
     }

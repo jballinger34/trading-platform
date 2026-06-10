@@ -43,13 +43,8 @@ public class ScreenerService {
                     FundamentalsDto f = fundamentalsMap.get(symbol);
                     PriceDto price = priceMap.get(symbol);
 
-                    // skip incomplete data
-                    if (profile == null || f == null || price == null) {
-                        return null;
-                    }
                     return buildStock(symbol, profile, f, price);
                 })
-                .filter(Objects::nonNull)
                 .filter(stock -> matches(request, stock))
                 .toList();
 
@@ -65,7 +60,9 @@ public class ScreenerService {
 
     }
     private boolean matches(StockScreenRequest r, ScreenedStockDto s) {
+
         if (r.sector() != null && !r.sector().equalsIgnoreCase(s.sector())) return false;
+
         if (r.industry() != null && !r.industry().equalsIgnoreCase(s.industry())) return false;
 
         if(notInRange(s.price(), r.minPrice(), r.maxPrice())) return false;
@@ -92,22 +89,22 @@ public class ScreenerService {
         return new ScreenedStockDto(
                 symbol,
 
-                profile.name(),
-                profile.sector(),
-                profile.industry(),
+                profile == null ? null : profile.name(),
+                profile == null ? null : profile.sector(),
+                profile == null ? null :profile.industry(),
 
-                price.close(),
-                price.bucketStart(),
-                price.volume(),
+                price == null ? null : price.close(),
+                price == null ? null : price.bucketStart(),
+                price == null ? null : price.volume(),
 
-                fundamentals.marketCap(),
-                fundamentals.revenue(),
-                fundamentals.netIncome(),
-                fundamentals.eps(),
+                fundamentals == null ? null : fundamentals.marketCap(),
+                fundamentals == null ? null : fundamentals.revenue(),
+                fundamentals == null ? null : fundamentals.netIncome(),
+                fundamentals == null ? null : fundamentals.eps(),
 
-                fundamentals.peRatio(),
-                fundamentals.roe(),
-                fundamentals.debtToEquity()
+                fundamentals == null ? null : fundamentals.peRatio(),
+                fundamentals == null ? null : fundamentals.roe(),
+                fundamentals == null ? null : fundamentals.debtToEquity()
         );
     }
 
@@ -143,7 +140,7 @@ public class ScreenerService {
     }
     private boolean notInRange(BigDecimal value, BigDecimal min, BigDecimal max) {
         if (value == null) {
-            return true;
+            return false;
         }
 
         if (min != null && value.compareTo(min) < 0) {
@@ -153,7 +150,7 @@ public class ScreenerService {
         return max != null && value.compareTo(max) > 0;
     }
     private boolean notInRange (Long value, Long min, Long max) {
-        if(value == null) return true;
+        if(value == null) return false;
         if(min != null && value < min) return true;
         if(max != null && value > max) return true;
         return false;
