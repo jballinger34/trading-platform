@@ -75,14 +75,12 @@ public class OrderBookManager {
             }
         }
 
-
+        //save the incoming order
+        orderRepository.saveAll(ordersToSave);
         if (incoming.isActive()) {
             // add incoming order to book, index it too
             book.add(incoming);
         }
-
-        //save the incoming order
-        orderRepository.saveAll(ordersToSave);
         return trades;
     }
 
