@@ -25,9 +25,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<Void> placeOrder(@RequestBody PlaceOrderRequest request, @AuthenticationPrincipal Jwt jwt){
-        UUID userId = UUID.fromString(jwt.getSubject());
-        orderService.placeOrder(userId, request);
-
+        orderService.placeOrder(jwt, request);
         return ResponseEntity.noContent().build();
     }
     @PostMapping("/cancel")

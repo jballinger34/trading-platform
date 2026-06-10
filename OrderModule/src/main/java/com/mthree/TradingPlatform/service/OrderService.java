@@ -10,6 +10,7 @@ import com.mthree.TradingPlatform.events.OrderPlacedEvent;
 import com.mthree.TradingPlatform.events.ReserveFundsEvent;
 import com.mthree.TradingPlatform.events.ReserveStockEvent;
 import com.mthree.TradingPlatform.kafka.EventProducer;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,10 +18,6 @@ import java.util.UUID;
 
 @Service
 public class OrderService {
-
-    //TODO
-    // discuss merging the 2 ReserveEvents and OrderPlacedEvent all into one (OrderPlacedEvent),
-    // and having consumers decide whether they are going
 
     private final WalletClient walletClient;
     private final PortfolioClient portfolioClient;
@@ -32,43 +29,42 @@ public class OrderService {
         this.eventProducer = eventProducer;
     }
 
-    public void placeOrder(UUID userId, PlaceOrderRequest request) {
+    public void placeOrder(Jwt token, PlaceOrderRequest request) {
         if (request.orderSide() == OrderSide.SELL) {
-            placeSellOrder(userId, request);
+            placeSellOrder(token, request);
         } else {
-            placeBuyOrder(userId, request);
+            placeBuyOrder(token, request);
         }
     }
     public void cancelOrder(UUID userId, CancelOrderRequest request){
         eventProducer.publishCancelOrder(new OrderCancelCommand(userId, request.symbol(), request.orderId()));
     }
 
-    private void placeBuyOrder(UUID userId, PlaceOrderRequest request) {
+    private void placeBuyOrder(Jwt token, PlaceOrderRequest request) {
         if (request == null || request.orderSide() != OrderSide.BUY) return;
         //check if they have the funds
 
         BigDecimal totalPrice = request.price().multiply(BigDecimal.valueOf(request.quantity()));
-        BigDecimal funds = walletClient.getFunds(userId);
+        BigDecimal funds = walletClient.getFunds(token);
         if(funds.compareTo(totalPrice) < 0){
-            //handle insufficient funds
-            return;
+            throw new RuntimeException("Insufficient funds");
         }
-
         //send kafka event to reserve funds - wallet module consumes this to reserve funds
         // then that order has been placed - orderbook consumes to process
+        UUID userId = UUID.fromString(token.getSubject());
         eventProducer.publishReserveFunds(new ReserveFundsEvent(userId, totalPrice));
         eventProducer.publishOrderPlaced(OrderPlacedEvent.create(request.symbol(), userId, request.quantity(), request.price(), request.orderSide()));
     }
 
-    private void placeSellOrder(UUID userId, PlaceOrderRequest request) {
+    private void placeSellOrder(Jwt token, PlaceOrderRequest request) {
         if (request == null || request.orderSide() != OrderSide.SELL) return;
 
         long sellQuantity = request.quantity();
-        long portfolioQuantity = portfolioClient.getHoldingQuantity(userId, request.symbol());
+        long portfolioQuantity = portfolioClient.getHoldingQuantity(token, request.symbol());
         if(portfolioQuantity < sellQuantity){
-            return;
+            throw new RuntimeException("Insufficent stock");
         }
-
+        UUID userId = UUID.fromString(token.getSubject());
         eventProducer.publishReserveStock(new ReserveStockEvent(userId, request.symbol(), sellQuantity));
         eventProducer.publishOrderPlaced(OrderPlacedEvent.create(request.symbol(), userId, request.quantity(), request.price(), request.orderSide()));
     }

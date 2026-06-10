@@ -29,4 +29,8 @@ public class WalletController {
     public Wallet getWallet(@AuthenticationPrincipal Jwt jwt) {
         return walletService.getorCreateWallet(jwt.getSubject());
     }
+    @GetMapping("/available-funds")
+    public Double getAvailableFunds(@AuthenticationPrincipal Jwt jwt){
+        return walletService.getorCreateWallet(jwt.getSubject()).getBalance();
+    }
 }

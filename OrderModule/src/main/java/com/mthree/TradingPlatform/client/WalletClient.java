@@ -1,6 +1,7 @@
 package com.mthree.TradingPlatform.client;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -16,17 +17,14 @@ public class WalletClient {
         this.restClient = restClient;
     }
 
-    //TODO
-    // make sure this endpoint is implemented
-
-    public BigDecimal getFunds(UUID userId){
-        if(userId == null) return new BigDecimal("0");
+    public BigDecimal getFunds(Jwt token){
         //send off to wallet service endpoint to get amount, then return it.
         return restClient.get().uri(uriBuilder -> uriBuilder
-                .path("/api/v1/wallet/available-funds")
-                .queryParam("userId", userId)
-                .build()
-        ).retrieve().body(BigDecimal.class);
+                        .path("/api/v1/wallet/available-funds")
+                        .build())
+                .header("Authorization", "Bearer "+ token.getTokenValue())
+                .retrieve()
+                .body(BigDecimal.class);
     }
 
 

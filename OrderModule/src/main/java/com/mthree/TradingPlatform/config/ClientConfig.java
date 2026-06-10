@@ -9,14 +9,14 @@ import org.springframework.web.client.RestClient;
 public class ClientConfig {
 
     @Bean
-    public RestClient portfolioRestClient(@Value("{$services.portfolio.url}") String baseUrl){
+    public RestClient portfolioRestClient(@Value("${services.portfolio.url}") String baseUrl){
         return RestClient.builder()
                 .baseUrl(baseUrl)
                 .build();
     }
 
     @Bean
-    public RestClient walletRestClient(@Value("{$services.wallet.url}") String baseUrl){
+    public RestClient walletRestClient(@Value("${services.wallet.url}") String baseUrl){
         return RestClient.builder()
                 .baseUrl(baseUrl)
                 .build();

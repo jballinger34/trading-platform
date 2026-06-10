@@ -1,6 +1,7 @@
 package com.mthree.TradingPlatform.client;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -15,15 +16,16 @@ public class PortfolioClient {
         this.restClient = restClient;
     }
 
-    public Integer getHoldingQuantity(UUID userId, String symbol){
-        if(userId == null || symbol == null) return 0;
+    public Integer getHoldingQuantity(Jwt token, String symbol){
         //send off to portfolio service endpoint to get amount, then return it.
         return restClient.get().uri(uriBuilder -> uriBuilder
-                .path("/api/v1/portfolio/quantity")
-                .queryParam("userId", userId)
-                .queryParam("symbol", symbol)
-                .build()
-        ).retrieve().body(Integer.class);
+                        .path("/api/v1/portfolio/quantity")
+                        .queryParam("symbol", symbol)
+                        .build()
+                )
+                .header("Authorization", "Bearer "+ token.getTokenValue())
+                .retrieve()
+                .body(Integer.class);
 
     }
 
