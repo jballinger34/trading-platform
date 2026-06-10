@@ -18,7 +18,7 @@ public class InstrumentClient {
     }
 
     public List<InstrumentResponseDto> getAllInstruments(){
-        return restClient.get().uri("/instruments").retrieve().body(new ParameterizedTypeReference<>() {});
+        return restClient.get().uri("api/v1/instruments").retrieve().body(new ParameterizedTypeReference<>() {});
     }
 
 }

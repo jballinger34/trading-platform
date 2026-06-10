@@ -16,7 +16,7 @@ public class InstrumentCreatedConsumer {
     }
 
     @Transactional
-    @KafkaListener(topics = "instrument-created")
+    @KafkaListener(topics = "instrument.created")
     public void handle(InstrumentCreatedEvent event){
         service.ingestInstrument(event);
     }
