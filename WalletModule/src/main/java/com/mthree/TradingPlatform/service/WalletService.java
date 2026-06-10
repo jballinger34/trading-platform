@@ -88,13 +88,8 @@ public class WalletService {
             String userId,
             Double amount) {
 
-        Wallet wallet = repository.findByUserId(userId)
-                .orElseThrow(() ->
-                        new RuntimeException("Wallet not found"));
-
-        wallet.setBalance(
-                wallet.getBalance() + amount
-        );
+        Wallet wallet = getorCreateWallet(userId);
+        wallet.setBalance(wallet.getBalance() + amount);
 
         return repository.save(wallet);
     }
@@ -103,9 +98,7 @@ public class WalletService {
             String userId,
             Double amount) {
 
-        Wallet wallet = repository.findByUserId(userId)
-                .orElseThrow(() ->
-                        new RuntimeException("Wallet not found"));
+        Wallet wallet =getorCreateWallet(userId);
 
         if (wallet.getBalance() < amount) {
             throw new RuntimeException("Insufficient balance");

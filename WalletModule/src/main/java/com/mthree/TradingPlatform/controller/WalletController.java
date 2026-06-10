@@ -6,27 +6,26 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-import com.mthree.TradingPlatform.dto.WalletTransactionRequest;
 
 @RestController
-@RequestMapping("/wallet")
+@RequestMapping("api/v1/wallet")
 @RequiredArgsConstructor
 public class WalletController {
 
     private final WalletService walletService;
 
     @PostMapping("/deposit")
-    public Wallet deposit(@RequestBody WalletTransactionRequest request, @AuthenticationPrincipal Jwt jwt) {
+    public Wallet deposit(@RequestParam double amount, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
-        return walletService.deposit(userId, request.getAmount());
+        return walletService.deposit(userId, amount);
     }
 
     @PostMapping("/withdraw")
-    public Wallet withdraw(@RequestBody WalletTransactionRequest request, @AuthenticationPrincipal Jwt jwt) {
+    public Wallet withdraw(@RequestParam double amount, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
-        return walletService.withdraw(userId, request.getAmount());
+        return walletService.withdraw(userId, amount);
     }
-    @GetMapping("/")
+    @GetMapping
     public Wallet getWallet(@AuthenticationPrincipal Jwt jwt) {
         return walletService.getorCreateWallet(jwt.getSubject());
     }
