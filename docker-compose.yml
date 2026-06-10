@@ -1,7 +1,56 @@
 version: "3.8"
 
 services:
-
+  auth-service:
+    build: ./AuthModule
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+  company-data-service:
+    build: ./CompanyData
+    container_name: company-data-service
+    ports:
+      - "8087:8087"
+  instrument-service:
+    build: ./InstrumentModule
+    container_name: instrument-service
+    ports:
+      - "8085:8085"
+  order-book-service:
+    build: ./OrderBook
+    container_name: order-book-service
+    ports:
+      - "8090:8090"
+  order-service:
+    build: ./OrderModule
+    container_name: order-service
+    ports:
+      - "8086:8086"
+  portfolio-service:
+    build: ./PortfolioModule
+    container_name: portfolio-service
+    ports:
+      - "8084:8084"
+  price-history-service:
+    build: ./PriceHistory
+    container_name: price-history-service
+    ports:
+      - "8088:8088"
+  screener-service:
+    build: ./ScreenerModule
+    container_name: screener-service
+    ports:
+      - "8089:8089"
+  user-service:
+    build: ./UserModule
+    container_name: user-service
+    ports:
+      - "8082:8082"
+  wallet-service:
+    build: ./WalletModule
+    container_name: wallet-service
+    ports:
+      - "8083:8083"
   kafka:
     image: apache/kafka:latest
     container_name: trading-platform-kafka
@@ -15,10 +64,10 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
 
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
 
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
 
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
