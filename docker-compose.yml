@@ -6,6 +6,9 @@ services:
     container_name: auth-service
     ports:
       - "8081:8081"
+    environment:
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUT_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
   company-data-service:
     build: ./CompanyData
     container_name: company-data-service
