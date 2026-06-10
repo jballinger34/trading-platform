@@ -24,7 +24,7 @@ public class JwtService {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .subject(userId.toString())
                 .issuedAt(now)
-                .expiresAt(now.plusSeconds(3600))
+                .expiresAt(now.plusSeconds(60*60*24*5)) //5 days
                 .build();
 
         return encoder
