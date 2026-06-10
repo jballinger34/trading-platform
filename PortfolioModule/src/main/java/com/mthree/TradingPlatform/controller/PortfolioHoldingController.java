@@ -8,6 +8,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import com.mthree.TradingPlatform.dto.PortfolioSummaryDto;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -34,6 +36,16 @@ public class PortfolioHoldingController {
     @GetMapping("/summary")
     public PortfolioSummaryDto getSummary(@AuthenticationPrincipal Jwt jwt) {
         return service.getPortfolioSummary(jwt.getSubject());
+    }
+
+
+    @PostMapping("/import")
+    public List<PortfolioHoldingResponseDto> tempAddHolding(@RequestBody List<PortfolioHoldingRequestDto> request, @AuthenticationPrincipal Jwt jwt){
+        List<PortfolioHoldingResponseDto> imported = new ArrayList<>();
+        for(PortfolioHoldingRequestDto dto : request){
+            imported.add(service.importHolding(dto, jwt.getSubject()));
+        }
+        return imported;
     }
 
 }

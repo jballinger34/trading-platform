@@ -8,9 +8,14 @@ import com.mthree.TradingPlatform.events.Trade;
 import com.mthree.TradingPlatform.events.TradeExecutedEvent;
 import com.mthree.TradingPlatform.repository.PortfolioHoldingRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import com.mthree.TradingPlatform.events.ReserveStockEvent;
+
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,62 +25,67 @@ public class PortfolioHoldingService {
     private final PortfolioHoldingRepository repository;
 
     public void processTrade(TradeExecutedEvent event) {
-
         Trade trade = event.trade();
 
         String buyerId = trade.buyerUserId().toString();
         String sellerId = trade.sellerUserId().toString();
         String symbol = trade.symbol();
+        long quantity = trade.quantity();
+        BigDecimal price = trade.price();
 
-        PortfolioHolding buyerHolding =
-                repository.findByUserIdAndSymbol(buyerId, symbol)
-                        .orElseGet(() -> {
-                            PortfolioHolding holding =
-                                    new PortfolioHolding();
+        Optional<PortfolioHolding> optionalBuyerHolding = repository.findByUserIdAndSymbol(buyerId, symbol);
+        PortfolioHolding buyerHolding;
+        if(optionalBuyerHolding.isPresent()){
+            buyerHolding = optionalBuyerHolding.get();
+            double oldInvestment = buyerHolding.getAveragePrice()*buyerHolding.getQuantity();
+            double newInvestment = quantity*price.doubleValue();
 
-                            holding.setUserId(buyerId);
-                            holding.setSymbol(symbol);
-                            holding.setQuantity(0);
-                            holding.setAveragePrice(
-                                    trade.price().doubleValue());
+            buyerHolding.setQuantity(buyerHolding.getQuantity() + buyerHolding.getQuantity());
+            double newAveragePrice = (oldInvestment + newInvestment)/buyerHolding.getQuantity();
 
-                            return holding;
-                        });
-
-        buyerHolding.setQuantity(
-                buyerHolding.getQuantity()
-                        + (int) trade.quantity());
-
+            buyerHolding.setAveragePrice(newAveragePrice);
+        } else {
+            buyerHolding = new PortfolioHolding();
+            buyerHolding.setUserId(buyerId);
+            buyerHolding.setSymbol(symbol);
+            buyerHolding.setQuantity((int) quantity);
+            buyerHolding.setAveragePrice(price.doubleValue());
+        }
         repository.save(buyerHolding);
 
-        repository.findByUserIdAndSymbol(sellerId, symbol)
-                .ifPresent(holding -> {
-
-                    holding.setQuantity(
-                            holding.getQuantity()
-                                    - (int) trade.quantity());
-
-                    repository.save(holding);
-                });
+        Optional<PortfolioHolding> optionalSellerHolding = repository.findByUserIdAndSymbol(sellerId, symbol);
+        PortfolioHolding sellerHolding;
+        if(optionalSellerHolding.isPresent()){
+            sellerHolding = optionalSellerHolding.get();
+            sellerHolding.setReservedQuantity((int) (sellerHolding.getReservedQuantity() - quantity));
+        } else {
+            throw new RuntimeException("Seller holding not found");
+        }
+        repository.save(sellerHolding);
     }
 
-    public PortfolioHoldingResponseDto createHolding(
-            PortfolioHoldingRequestDto request) {
+    public PortfolioHoldingResponseDto importHolding(PortfolioHoldingRequestDto request, String userId) {
 
-        PortfolioHolding holding = new PortfolioHolding();
+        Optional<PortfolioHolding> holdingOptional = repository.findByUserIdAndSymbol(userId, request.getSymbol());
+        PortfolioHolding holding;
+        if(holdingOptional.isPresent()){
+            holding = holdingOptional.get();
+            double oldInvestment = holding.getAveragePrice()*holding.getQuantity();
+            double newInvestment = request.getQuantity()*request.getAveragePrice();
 
-        holding.setReservedQuantity(
-                request.getReservedQuantity() == null
-                        ? 0
-                        : request.getReservedQuantity()
-        );
-        holding.setUserId(request.getUserId());
-        holding.setSymbol(request.getSymbol());
-        holding.setQuantity(request.getQuantity());
-        holding.setAveragePrice(request.getAveragePrice());
+            holding.setQuantity(holding.getQuantity() + request.getQuantity());
+            double newAveragePrice = (oldInvestment + newInvestment)/holding.getQuantity();
+
+            holding.setAveragePrice(newAveragePrice);
+        } else {
+            holding = new PortfolioHolding();
+            holding.setUserId(userId);
+            holding.setSymbol(request.getSymbol());
+            holding.setQuantity(request.getQuantity());
+            holding.setAveragePrice(request.getAveragePrice());
+        }
 
         PortfolioHolding saved = repository.save(holding);
-
         return mapToResponse(saved);
 
     }
@@ -144,74 +154,40 @@ public class PortfolioHoldingService {
         return dto;
     }
 
-    public void reserveStock(
-            ReserveStockEvent event) {
+    public void reserveStock(ReserveStockEvent event) {
 
-        String userId =
-                event.userId().toString();
+        String userId = event.userId().toString();
 
-        PortfolioHolding holding =
-                repository.findByUserIdAndSymbol(
-                                userId,
-                                event.symbol()
-                        )
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Holding not found"));
+        PortfolioHolding holding = repository.findByUserIdAndSymbol(userId, event.symbol())
+                        .orElseThrow(() -> new RuntimeException("Holding not found"));
 
-        int quantity =
-                event.quantity().intValue();
+        int quantity = event.quantity().intValue();
 
         if (holding.getQuantity() < quantity) {
-            throw new RuntimeException(
-                    "Insufficient shares");
+            throw new RuntimeException("Insufficient shares");
         }
 
-        holding.setQuantity(
-                holding.getQuantity() - quantity
-        );
-
-        holding.setReservedQuantity(
-                holding.getReservedQuantity()
-                        + quantity
-        );
+        holding.setQuantity(holding.getQuantity() - quantity);
+        holding.setReservedQuantity(holding.getReservedQuantity() + quantity);
 
         repository.save(holding);
     }
 
-    public void unreserveStock(
-            UnreserveStockEvent event) {
+    public void unreserveStock(UnreserveStockEvent event) {
 
-        String userId =
-                event.userId().toString();
+        String userId = event.userId().toString();
 
-        PortfolioHolding holding =
-                repository.findByUserIdAndSymbol(
-                                userId,
-                                event.symbol()
-                        )
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Holding not found"));
+        PortfolioHolding holding = repository.findByUserIdAndSymbol(userId, event.symbol())
+                .orElseThrow(() -> new RuntimeException("Holding not found"));
 
-        int quantity =
-                event.quantity().intValue();
+        int quantity = event.quantity().intValue();
 
         if (holding.getReservedQuantity() < quantity) {
-            throw new RuntimeException(
-                    "Insufficient reserved shares");
+            throw new RuntimeException("Insufficient reserved shares");
         }
 
-        holding.setReservedQuantity(
-                holding.getReservedQuantity()
-                        - quantity
-        );
-
-        holding.setQuantity(
-                holding.getQuantity()
-                        + quantity
-        );
-
+        holding.setReservedQuantity(holding.getReservedQuantity() - quantity);
+        holding.setQuantity(holding.getQuantity() + quantity);
         repository.save(holding);
     }
 }
