@@ -19,10 +19,10 @@ public class EventProducer {
     private  <T> void publish(String topic, T event) {
         kafkaTemplate.send(topic, event);
     }
-    public void publishReserveFunds(ReserveFundsEvent event){
+    public void publishReserveStock(ReserveStockEvent event){
         publish("portfolio.reserve", event);
     }
-    public void publishReserveStock(ReserveStockEvent event){
+    public void publishReserveFunds(ReserveFundsEvent event){
         publish("wallet.reserve", event);
     }
 
