@@ -3,6 +3,7 @@ package com.mthree.TradingPlatform.manager;
 import com.mthree.TradingPlatform.domain.model.*;
 import com.mthree.TradingPlatform.repo.OrderRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -23,12 +24,16 @@ public class OrderBookManager {
         return orderRepository.findAllByUserId(user);
     }
 
+    @Transactional
     public List<Trade> match(Order incoming){
         String symbol = incoming.getSymbol();
         OrderBook book = getBook(symbol);
 
         List<Trade> trades = new ArrayList<>();
         NavigableMap<BigDecimal, Deque<Order>> oppositeSide = (incoming.getSide() == OrderSide.BUY) ? book.getAsks() : book.getBids();
+
+        List<Order> ordersToSave = new ArrayList<>();
+        ordersToSave.add(incoming);
 
         while (incoming.getRemainingQuantity() > 0 && !oppositeSide.isEmpty()) {
             BigDecimal bestPrice = oppositeSide.firstKey();
@@ -51,9 +56,10 @@ public class OrderBookManager {
             long qty = Math.min(incoming.getRemainingQuantity(), resting.getRemainingQuantity());
 
             // update quantities and status based off of this
-            incoming.reduceQuantity(incoming.getRemainingQuantity() - qty);
-            resting.reduceQuantity(resting.getRemainingQuantity() - qty);
+            incoming.reduceQuantity(qty);
+            resting.reduceQuantity(qty);
 
+            ordersToSave.add(resting);
             //create trade
             trades.add(Trade.create(
                     incoming.getSide() == OrderSide.BUY ? incoming : resting,
@@ -67,8 +73,6 @@ public class OrderBookManager {
             if (!resting.isActive()) {
                 book.remove(resting);
             }
-            //save resting
-            orderRepository.save(resting);
         }
 
 
@@ -78,7 +82,7 @@ public class OrderBookManager {
         }
 
         //save the incoming order
-        orderRepository.save(incoming);
+        orderRepository.saveAll(ordersToSave);
         return trades;
     }
 

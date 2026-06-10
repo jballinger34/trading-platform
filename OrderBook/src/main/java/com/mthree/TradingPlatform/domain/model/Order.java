@@ -19,6 +19,9 @@ public class Order {
     @GeneratedValue
     private UUID orderId;
 
+    @Version
+    private Long version;
+
     private UUID userId;
 
     private String symbol;
@@ -53,15 +56,17 @@ public class Order {
     }
 
     public static Order build(OrderPlacedEvent event){
-        return new Order(
-                UUID.randomUUID(),
-                event.userId(),
-                event.symbol(),
-                event.quantity(),event.quantity(),
-                event.price(),
-                event.orderSide(),
-                Instant.now(),
-                OrderStatus.NEW
-        );
+        Order order = new Order();
+        order.userId = event.userId();
+        order.symbol = event.symbol();
+
+        order.quantity = event.quantity();
+        order.remainingQuantity = event.quantity();
+
+        order.price = event.price();
+        order.side = event.orderSide();
+        order.createdAt = Instant.now();
+        order.status = OrderStatus.NEW;
+        return order;
     }
 }
